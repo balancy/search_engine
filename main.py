@@ -11,6 +11,13 @@ FOLDER_TO_SAVE_RESULTS = "data/"
 
 
 def parse_bing_one_page(keyword, page_number):
+    """Extract URLs from one page of results of bing search.
+
+    :param keyword: keyword to search
+    :param page_number: bing results page number
+    :return: list of URLs
+    """
+
     headers = {
         "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:83.0) "
                       "Gecko/20100101 Firefox/83.0"
@@ -34,6 +41,13 @@ def parse_bing_one_page(keyword, page_number):
 
 
 def fetch_bing_search_results(keyword, results_number):
+    """Extract results_number URLs from results of bing search.
+
+    :param keyword: keyword to search
+    :param results_number: number of results to extract
+    :return: list of URLs
+    """
+
     if results_number < 1 or not keyword:
         return None
 
@@ -48,6 +62,13 @@ def fetch_bing_search_results(keyword, results_number):
 
 
 def parse_duckduckgo(keyword, results_number):
+    """Extract results_number of URLs from duckduckgo search.
+
+    :param keyword: keyword to search
+    :param results_number: number of UTLs to extract
+    :return: list of URLs
+    """
+
     headers = {
         "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:83.0) "
                       "Gecko/20100101 Firefox/83.0"
@@ -72,6 +93,12 @@ def parse_duckduckgo(keyword, results_number):
 
 
 def fetch_urls_from_page(url):
+    """Extract all urls from given page.
+
+    :param url: given page to extract url
+    :return: list of urls
+    """
+
     response = requests.get(url)
     response.raise_for_status()
     response.encoding = "utf-8"
@@ -83,6 +110,13 @@ def fetch_urls_from_page(url):
 
 
 def fetch_urls_from_list_of_pages(urls, results_number):
+    """Extract results_number urls from given pages.
+
+    :param urls: given pages to extract urls
+    :param results_number: number or urls to extract
+    :return: list of urls
+    """
+
     all_urls = []
     for url in urls:
         all_urls += fetch_urls_from_page(url[0])[:results_number]
@@ -91,6 +125,13 @@ def fetch_urls_from_list_of_pages(urls, results_number):
 
 
 def save_urls_to_csv(urls, urls_second_rang=None):
+    """Save a list of urls to csv file.
+
+    :param urls: list of urls
+    :param urls_second_rang: list of urls of 2nd rang if given
+    :return: None
+    """
+
     if urls_second_rang:
         urls += urls_second_rang
 
@@ -106,6 +147,13 @@ def save_urls_to_csv(urls, urls_second_rang=None):
 
 
 def save_urls_to_json(urls, urls_second_rang=None):
+    """Save a list of urls to json file.
+
+    :param urls: list of urls
+    :param urls_second_rang: list of urls of 2nd rang if given
+    :return: None
+    """
+
     urls = {
         "urls_1st_rang": urls
     }
@@ -123,6 +171,13 @@ def save_urls_to_json(urls, urls_second_rang=None):
 
 
 def print_to_console(urls, urls_second_rang=None):
+    """Print a list of urls to the console.
+
+    :param urls: list of urls
+    :param urls_second_rang: list of urls of 2nd rang if given
+    :return: None
+    """
+
     table_data = [["URL link", "URL title"]]
 
     if urls_second_rang:
