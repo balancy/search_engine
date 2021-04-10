@@ -10,7 +10,7 @@ from terminaltables import AsciiTable
 FOLDER_TO_SAVE_RESULTS = "data/"
 
 
-def parse_bing_one_page(keyword, page_number):
+def parse_bing_one_page(keyword: str, page_number: int):
     """Extract URLs from one page of results of bing search.
 
     :param keyword: keyword to search
@@ -40,7 +40,7 @@ def parse_bing_one_page(keyword, page_number):
     ]
 
 
-def fetch_bing_search_results(keyword, results_number):
+def fetch_bing_search_results(keyword: str, results_number: int):
     """Extract results_number URLs from results of bing search.
 
     :param keyword: keyword to search
@@ -61,7 +61,7 @@ def fetch_bing_search_results(keyword, results_number):
     return search_results[:results_number]
 
 
-def parse_duckduckgo(keyword, results_number):
+def parse_duckduckgo(keyword: str, results_number: int):
     """Extract results_number of URLs from duckduckgo search.
 
     :param keyword: keyword to search
@@ -92,7 +92,7 @@ def parse_duckduckgo(keyword, results_number):
     return urls[:results_number]
 
 
-def fetch_urls_from_page(url):
+def fetch_urls_from_page(url: str):
     """Extract all urls from given page.
 
     :param url: given page to extract url
@@ -109,7 +109,7 @@ def fetch_urls_from_page(url):
             if (url := a_elm.get("href", "")).startswith("https://")]
 
 
-def fetch_urls_from_list_of_pages(urls, results_number):
+def fetch_urls_from_list_of_pages(urls: list, results_number: int):
     """Extract results_number urls from given pages.
 
     :param urls: given pages to extract urls
@@ -124,7 +124,7 @@ def fetch_urls_from_list_of_pages(urls, results_number):
     return all_urls
 
 
-def save_urls_to_csv(urls, urls_second_rang=None):
+def save_urls_to_csv(urls: list, urls_second_rang=None):
     """Save a list of urls to csv file.
 
     :param urls: list of urls
@@ -146,7 +146,7 @@ def save_urls_to_csv(urls, urls_second_rang=None):
         writer.writerows(urls)
 
 
-def save_urls_to_json(urls, urls_second_rang=None):
+def save_urls_to_json(urls: list, urls_second_rang=None):
     """Save a list of urls to json file.
 
     :param urls: list of urls
@@ -170,7 +170,7 @@ def save_urls_to_json(urls, urls_second_rang=None):
         json.dump(urls, file, ensure_ascii=False)
 
 
-def print_to_console(urls, urls_second_rang=None):
+def print_to_console(urls: list, urls_second_rang=None):
     """Print a list of urls to the console.
 
     :param urls: list of urls
@@ -190,6 +190,41 @@ def print_to_console(urls, urls_second_rang=None):
     print(table.table)
 
 
+def main(
+        engine: str, format: str, keyword: str,
+        number: int, number2: int, recursively: bool,
+):
+    """Function that takes user input and performs operations accordingly.
+
+    :param engine: search engine to use
+    :param format: format to save results to
+    :param keyword: keyword to search
+    :param number: number of 1st rang urls to extract
+    :param number2: number of 2nd rang urls to extract
+    :param recursively: flag designating need to search 2nd rang urls
+    :return: None
+    """
+
+    if engine == "duckduckgo" or engine == "duck":
+        urls = parse_duckduckgo(keyword, number)
+    else:
+        urls = fetch_bing_search_results(keyword, number)
+
+    if recursively:
+        urls_second_rang = fetch_urls_from_list_of_pages(urls, number2)
+    else:
+        urls_second_rang = None
+
+    os.makedirs(FOLDER_TO_SAVE_RESULTS, exist_ok=True)
+
+    if format == "console":
+        print_to_console(urls, urls_second_rang=urls_second_rang)
+    elif format == "csv":
+        save_urls_to_csv(urls, urls_second_rang=urls_second_rang)
+    else:
+        save_urls_to_json(urls, urls_second_rang)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes search for specified phrase via search engines. "
@@ -204,7 +239,8 @@ if __name__ == "__main__":
         help="Format to save results in (csv, json, console)",
     )
     parser.add_argument(
-        "-k", "--keyword", type=str, help="Keyword to search", default="python",
+        "-k", "--keyword", type=str, help="Keyword to search",
+        default="python",
     )
     parser.add_argument(
         "-n", "--number", type=int, help="Number of 1st rang URLs in result",
@@ -216,25 +252,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-r", "--recursively", action="store_true",
-        help="Flag go search 2nd rang results",
+        help="Flag designating need go search 2nd rang results",
     )
     args = parser.parse_args()
 
-    if args.engine == "duckduckgo" or args.engine == "duck":
-        urls = parse_duckduckgo(args.keyword, args.number)
-    else:
-        urls = fetch_bing_search_results(args.keyword, args.number)
-
-    if args.recursively:
-        urls_second_rang = fetch_urls_from_list_of_pages(urls, args.number2)
-    else:
-        urls_second_rang = None
-
-    os.makedirs(FOLDER_TO_SAVE_RESULTS, exist_ok=True)
-
-    if args.format == "console":
-        print_to_console(urls, urls_second_rang=urls_second_rang)
-    elif args.format == "csv":
-        save_urls_to_csv(urls, urls_second_rang=urls_second_rang)
-    else:
-        save_urls_to_json(urls, urls_second_rang)
+    main(
+        args.engine, args.format, args.keyword,
+        args.number, args.number2, args.recursively,
+    )
